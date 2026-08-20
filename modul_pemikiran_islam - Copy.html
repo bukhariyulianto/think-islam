@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Modul Pemikiran Islam - Seni Membongkar Kemunafikan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Amiri', 'serif']
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                             dark: '#022c22'
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            overflow: hidden; 
+            touch-action: manipulation; 
+        }
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transform: scale(0.96) translateY(15px);
+            transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none; z-index: 10;
+        }
+        .slide.active {
+            opacity: 1; transform: scale(1) translateY(0);
+            pointer-events: auto; z-index: 20;
+        }
+        .slide.prev { transform: scale(1.03) translateY(-15px); }
+        
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(203, 213, 225, 0.5);
+        }
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar for local narrative overflow */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { 
+            background: rgba(16, 185, 129, 0.3); 
+            border-radius: 10px; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
+
+        /* Text Gradients and Glows */
+        .text-gradient-emerald {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .symbol-glow { text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        
+        /* Pulse Animation */
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .btn-pulse:hover { animation: pulse-soft 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 h-screen w-screen flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Top Navigation / Progress -->
+    <header class="h-16 flex items-center justify-between px-4 sm:px-8 z-50 relative glass-panel shadow-sm shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-500 shadow-sm">
+                <i class="fa-solid fa-kaaba text-lg"></i>
+            </div>
+            <div>
+                <span class="font-extrabold text-xs sm:text-sm tracking-wider uppercase text-brand-600 dark:text-brand-400 block">MODUL KAFFAH</span>
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block">Pemikiran Islam Kritis & Hikmah</span>
+            </div>
+        </div>
+
+        <div class="flex-1 max-w-xs sm:max-w-md mx-4 sm:mx-8">
+            <div class="flex justify-between text-[10px] font-semibold text-slate-400 mb-1">
+                <span>PROGRESS</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-300/30 dark:border-slate-700/30">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-brand-500 to-emerald-400 rounded-full transition-all duration-300 w-0"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <button onclick="toggleSound()" id="sound-btn" title="Efek Suara" class="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-200/60 dark:bg-slate-800/60 hover:bg-slate-300 dark:hover:bg-slate-700 transition text-slate-600 dark:text-slate-300">
+                <i class="fa-solid fa-volume-high text-sm"></i>
+            </button>
+            <button onclick="toggleTheme()" title="Mode Gelap/Terang" class="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-200/60 dark:bg-slate-800/60 hover:bg-slate-300 dark:hover:bg-slate-700 transition text-slate-600 dark:text-slate-300">
+                <i id="theme-icon" class="fa-solid fa-sun text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="slide-container" class="flex-1 relative overflow-hidden flex justify-center items-center p-3 sm:p-6 md:p-8">
+        <!-- Slides will be injected dynamically via JS -->
+    </main>
+
+    <!-- Bottom Navigation -->
+    <footer class="h-18 sm:h-20 flex justify-between items-center px-4 sm:px-10 z-50 glass-panel shrink-0 border-t border-slate-200/50 dark:border-slate-800/50">
+        <button onclick="prevSlide()" id="prev-btn" class="px-4 sm:px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition flex items-center space-x-2 disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Sebelumnya</span>
+        </button>
+        
+        <div class="flex items-center space-x-2">
+            <span id="slide-counter" class="font-bold text-xs sm:text-sm px-3 py-1 rounded-lg bg-slate-200/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-mono">1 / X</span>
+        </div>
+
+        <button onclick="nextSlide()" id="next-btn" class="px-5 sm:px-7 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-brand-500 to-brand-600 text-white hover:from-brand-600 hover:to-brand-700 transition shadow-md shadow-brand-500/20 flex items-center space-x-2 btn-pulse">
+            <span>Lanjut</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </footer>
+
+<script>
+    // --- AUDIO SYSTEM (Web Audio API) ---
+    let soundEnabled = true;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, vol = 0.08) {
+        if (!soundEnabled) return;
+        initAudio();
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch (e) {
+            console.log("Audio error", e);
+        }
+    }
+
+    const sounds = {
+        nav: () => playTone(350, 'sine', 0.12, 0.04),
+        click: () => playTone(550, 'triangle', 0.08, 0.04),
+        correct: () => { playTone(523.25, 'sine', 0.12); setTimeout(() => playTone(659.25, 'sine', 0.22), 90); },
+        wrong: () => { playTone(180, 'sawtooth', 0.15); setTimeout(() => playTone(130, 'sawtooth', 0.25), 120); },
+        reveal: () => { playTone(700, 'sine', 0.06, 0.02); setTimeout(() => playTone(1100, 'sine', 0.12, 0.02), 60); }
+    };
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        document.getElementById('sound-btn').innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high text-sm"></i>' : '<i class="fa-solid fa-volume-xmark text-sm"></i>';
+        if(soundEnabled) sounds.click();
+    }
+
+    // --- THEME SYSTEM ---
+    function toggleTheme() {
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        document.getElementById('theme-icon').className = isDark ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
+        sounds.click();
+    }
+
+    // --- CONTENT DATA (12 Material Slides + Intro + Quiz + Result) ---
+    const slidesData = [
+        {
+            id: 'cover',
+            html: `
+                <div class="w-full max-w-3xl mx-auto flex flex-col justify-center items-center text-center max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 text-xs font-bold mb-4">
+                        <i class="fa-solid fa-compass"></i>
+                        <span>MODUL PEMIKIRAN ISLAM KAFFAH</span>
+                    </div>
+                    
+                    <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold mb-4 leading-tight">
+                        Seni <span class="text-gradient-gold">"Trickster"</span> Membongkar <span class="text-gradient-emerald">Kemunafikan</span>
+                    </h1>
+                    
+                    <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-6 font-medium max-w-xl leading-relaxed">
+                        Membentuk Generasi Pembaharu dengan Pemikiran Kritis, Hikmah, dan Risalah Kebenaran Peradaban.
+                    </p>
+
+                    <div class="w-full glass-panel p-5 sm:p-6 rounded-2xl border-l-4 border-l-brand-500 text-left relative overflow-hidden my-2 shadow-lg">
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-brand-500"><i class="fa-solid fa-quote-right text-8xl"></i></div>
+                        <div class="flex items-start space-x-3">
+                            <i class="fa-solid fa-quote-left text-brand-500 text-xl mt-1"></i>
+                            <div>
+                                <p class="text-xs sm:text-sm md:text-base font-semibold italic text-slate-700 dark:text-slate-200 leading-relaxed mb-2">
+                                    "Setiap zaman memiliki penyakitnya, dan setiap penyakit membutuhkan pembongkaran."
+                                </p>
+                                <span class="text-[11px] font-bold text-brand-600 dark:text-brand-400 tracking-wider uppercase">— Prinsip Pembaharu Peradaban</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4 w-full mt-4 text-left">
+                        <div class="glass-card p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <i class="fa-solid fa-brain text-brand-500 text-lg mb-1 block"></i>
+                            <h4 class="font-bold text-xs">Kritis</h4>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">Bertanya mendalam</p>
+                        </div>
+                        <div class="glass-card p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <i class="fa-solid fa-feather text-gold-500 text-lg mb-1 block"></i>
+                            <h4 class="font-bold text-xs">Hikmah</h4>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">Bijak bermetode</p>
+                        </div>
+                        <div class="glass-card p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <i class="fa-solid fa-book-quran text-emerald-500 text-lg mb-1 block"></i>
+                            <h4 class="font-bold text-xs">Risalah</h4>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400">Berbasis Wahyu</p>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'pendahuluan-detail',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center font-bold text-sm"><i class="fa-solid fa-book-open"></i></span>
+                        <h2 class="text-xl sm:text-2xl font-bold">Pendahuluan: Akar Perubahan Sejarah</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 mb-4">
+                        Dalam perjalanan sejarah manusia, perubahan besar hampir selalu dimulai oleh orang-orang yang berani mempertanyakan sesuatu yang dianggap normal oleh mayoritas masyarakat. Mereka bukan sekadar pemberontak tanpa tujuan, melainkan individu berpikiran jernih.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <div class="glass-card p-3.5 rounded-xl border-l-2 border-l-rose-500">
+                            <span class="text-rose-500 text-xs font-bold block mb-1"><i class="fa-solid fa-xmark mr-1"></i> Kesalahan Sistem</span>
+                            <p class="text-xs opacity-80">Sesuatu yang salah tetapi dianggap biasa oleh publik.</p>
+                        </div>
+                        <div class="glass-card p-3.5 rounded-xl border-l-2 border-l-amber-500">
+                            <span class="text-amber-500 text-xs font-bold block mb-1"><i class="fa-solid fa-masks-theater mr-1"></i> Tradisi Zalim</span>
+                            <p class="text-xs opacity-80">Sesuatu yang menindas tetapi dibungkus nama tradisi.</p>
+                        </div>
+                        <div class="glass-card p-3.5 rounded-xl border-l-2 border-l-blue-500">
+                            <span class="text-blue-500 text-xs font-bold block mb-1"><i class="fa-solid fa-ghost mr-1"></i> Kekosongan Nilai</span>
+                            <p class="text-xs opacity-80">Sesuatu yang tak bernilai tetapi diagungkan sebagai kebenaran.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 rounded-xl border border-brand-500/30 bg-brand-500/5 mb-2">
+                        <p class="text-xs sm:text-sm font-medium leading-relaxed">
+                            <strong class="text-brand-600 dark:text-brand-400">Pertanyaan Pembuka Peradaban:</strong> 
+                            <em class="block mt-1 italic text-slate-700 dark:text-slate-200 font-serif text-sm sm:text-base">"Apakah benar selama ini kita berada di jalan yang benar?"</em>
+                        </p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                            Karakter ini sering disebut <strong>Trickster</strong> dalam budaya dunia. Namun Islam mengajarkan pembongkaran bukan untuk kekacauan, melainkan untuk mengembalikan manusia pada petunjuk Ilahi.
+                        </p>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab1',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-500 flex items-center justify-center font-bold text-sm">BAB 1</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Manusia & Penyakit Status Quo</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-4 text-slate-600 dark:text-slate-300">
+                        Salah satu kelemahan terbesar manusia adalah kecenderungan menerima sesuatu hanya karena <strong>sudah lama dilakukan</strong>. Kebatilan bertahan bukan karena ia kuat secara argumentasi, melainkan karena manusia berhenti berpikir kritis.
+                    </p>
+
+                    <!-- Quranic Verse Box -->
+                    <div class="glass-panel p-4 rounded-xl border-r-4 border-r-brand-500 bg-brand-500/10 mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider"><i class="fa-solid fa-book-quran mr-1"></i> QS. Al-Baqarah: 170</span>
+                            <span class="text-xs font-serif text-slate-400">Dalil Al-Qur'an</span>
+                        </div>
+                        <p class="text-sm sm:text-base font-serif italic text-slate-800 dark:text-slate-100 mb-2 leading-relaxed">
+                            "Dan apabila dikatakan kepada mereka: 'Ikutilah apa yang telah diturunkan Allah,' mereka menjawab: 'Tidak, tetapi kami mengikuti apa yang kami dapati dari nenek moyang kami...'"
+                        </p>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 italic">Masyarakat sering berlindung di balik doktrin "Tradisi Nenek Moyang" tanpa pernah menguji kebenarannya.</p>
+                    </div>
+
+                    <!-- Flow Diagram -->
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slate-400 mb-2">Simbol Pemikiran: Siklus Kebiasaan Sesat</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                        <div class="bg-slate-200 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700">
+                            <span class="font-bold block text-slate-700 dark:text-slate-200">1. KEBIASAAN</span>
+                            <span class="text-[10px] text-slate-500">Dilakukan berulang</span>
+                        </div>
+                        <div class="bg-slate-200 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700">
+                            <span class="font-bold block text-amber-500">2. DIANGGAP NORMAL</span>
+                            <span class="text-[10px] text-slate-500">Menjadi konsensus</span>
+                        </div>
+                        <div class="bg-slate-200 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-300 dark:border-slate-700">
+                            <span class="font-bold block text-rose-500">3. TANPA KRITIK</span>
+                            <span class="text-[10px] text-slate-500">Nalar dimatikan</span>
+                        </div>
+                        <div class="bg-rose-500 text-white p-2.5 rounded-lg shadow-sm">
+                            <span class="font-bold block">4. SISTEM SESAT</span>
+                            <span class="text-[10px] text-rose-100">Kebatilan mengakar</span>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab2',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold text-sm">BAB 2</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Makna 'Trickster' dalam Perubahan</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-4 text-slate-600 dark:text-slate-300">
+                        Dalam mitologi dan cerita rakyat dunia (Loki, Sun Wukong, tokoh satir), karakter <em>Trickster</em> berfungsi mengganggu pola pikir masyarakat yang membeku. Namun Islam membedakan dua jenis pengganggu kenyamanan:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <div class="glass-panel p-4 rounded-xl border-t-4 border-t-rose-500">
+                            <div class="flex items-center space-x-2 text-rose-500 font-bold text-sm mb-2">
+                                <i class="fa-solid fa-bullhorn"></i> <span>1. Pengganggu Tanpa Nilai</span>
+                            </div>
+                            <ul class="text-xs space-y-1.5 text-slate-600 dark:text-slate-300">
+                                <li>• <strong>Tujuan:</strong> Sekadar popularitas, sensasi, & viral.</li>
+                                <li>• <strong>Metode:</strong> Asal beda tanpa argumen ilmu.</li>
+                                <li>• <strong>Hasil:</strong> Kebisingan sosial kosong.</li>
+                            </ul>
+                        </div>
+
+                        <div class="glass-panel p-4 rounded-xl border-t-4 border-t-brand-500">
+                            <div class="flex items-center space-x-2 text-brand-500 font-bold text-sm mb-2">
+                                <i class="fa-solid fa-hammer"></i> <span>2. Pembongkar Kebatilan</span>
+                            </div>
+                            <ul class="text-xs space-y-1.5 text-slate-600 dark:text-slate-300">
+                                <li>• <strong>Tujuan:</strong> Mencari kebenaran & ridha Allah.</li>
+                                <li>• <strong>Metode:</strong> Dilandasi ilmu, argumen & hikmah.</li>
+                                <li>• <strong>Hasil:</strong> Perubahan peradaban & transformasi.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Formula Box -->
+                    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-xl text-center border border-slate-700 shadow-md">
+                        <span class="text-[10px] text-amber-400 font-bold tracking-widest uppercase block mb-1">FORMULA TRANSFORMASI ISLAM</span>
+                        <div class="flex justify-center items-center space-x-2 sm:space-x-4 text-xs sm:text-sm font-bold font-mono">
+                            <span class="bg-rose-500/30 text-rose-300 px-2.5 py-1 rounded">KONTROVERSI</span>
+                            <span>+</span>
+                            <span class="bg-blue-500/30 text-blue-300 px-2.5 py-1 rounded">ILMU</span>
+                            <span>+</span>
+                            <span class="bg-amber-500/30 text-amber-300 px-2.5 py-1 rounded">TUJUAN MULIA</span>
+                            <span>=</span>
+                            <span class="bg-brand-500 text-white px-3 py-1 rounded shadow-lg">TRANSFORMASI</span>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab3',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-sm">BAB 3</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Rasulullah ﷺ: Pembawa Perubahan Terbesar</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Mengapa Makkah menolak dakwah Nabi ﷺ padahal beliau dijuluki <strong>Al-Amin</strong> (orang terpercaya)? Karena Islam menggugat sistem oligarki yang menguntungkan mereka!
+                    </p>
+
+                    <!-- 4 Pillars of Gugatan -->
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
+                        <div class="glass-card p-3 rounded-lg border-l-2 border-l-brand-500">
+                            <span class="text-brand-500 font-bold text-xs block mb-0.5"><i class="fa-solid fa-kaaba"></i> Aqidah</span>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Menggugat penyembahan berhala buatan tangan manusia sendiri.</p>
+                        </div>
+                        <div class="glass-card p-3 rounded-lg border-l-2 border-l-amber-500">
+                            <span class="text-amber-500 font-bold text-xs block mb-0.5"><i class="fa-solid fa-coins"></i> Ekonomi</span>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Membongkar monopoli perdagangan berhala 360 patung kaum Quraysh.</p>
+                        </div>
+                        <div class="glass-card p-3 rounded-lg border-l-2 border-l-rose-500">
+                            <span class="text-rose-500 font-bold text-xs block mb-0.5"><i class="fa-solid fa-users"></i> Sosial</span>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Menghapus perbudakan & penindasan derajat kaum perempuan.</p>
+                        </div>
+                        <div class="glass-card p-3 rounded-lg border-l-2 border-l-blue-500">
+                            <span class="text-blue-500 font-bold text-xs block mb-0.5"><i class="fa-solid fa-crown"></i> Politik</span>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Menolak kekuasaan mutlak berdasarkan garis nasab keturunan bangsawan.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-3 rounded-xl flex justify-between items-center text-xs font-bold bg-slate-200/50 dark:bg-slate-800/50">
+                        <div class="text-center w-5/12 text-rose-500">
+                            <span>JAHILIYAH</span>
+                            <span class="block text-[10px] font-normal text-slate-400">Tradisi, Oligarki, Ketidakadilan</span>
+                        </div>
+                        <div class="w-2/12 text-center text-amber-500 font-extrabold text-sm">VS</div>
+                        <div class="text-center w-5/12 text-brand-500">
+                            <span>ISLAM</span>
+                            <span class="block text-[10px] font-normal text-slate-400">Tauhid, Keadilan, Wahyu</span>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab4',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center font-bold text-sm">BAB 4</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Awal Perubahan: Pertanyaan Benar</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Sebelum menerima wahyu, Rasulullah ﷺ berkhalwat di Gua Hira. Beliau tidak menelan mentah-mentah realitas jahiliyah. Beliau merenung dan bertanya secara mendalam:
+                    </p>
+
+                    <div class="glass-panel p-3.5 rounded-xl border-l-4 border-l-blue-500 mb-4 bg-blue-500/5">
+                        <ul class="text-xs sm:text-sm font-serif italic space-y-1 text-slate-700 dark:text-slate-200">
+                            <li>• "Mengapa manusia menyembah batu yang tak bisa memberi manfaat?"</li>
+                            <li>• "Mengapa kaum kuat merampas hak kaum lemah tanpa rasa bersalah?"</li>
+                            <li>• "Ke mana arah tujuan hidup masyarakat ini sebenarnya?"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Process Diagram -->
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-slate-400 mb-2">Anatomi Lahirnya Pembaharu</h4>
+                    <div class="flex flex-wrap sm:flex-nowrap justify-between items-center gap-1.5 text-center text-[11px] font-bold">
+                        <div class="bg-slate-200 dark:bg-slate-800 p-2 rounded-lg flex-1 min-w-[70px]">REALITAS</div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs hidden sm:block"></i>
+                        <div class="bg-blue-500/20 text-blue-400 p-2 rounded-lg flex-1 min-w-[70px]">PERTANYAAN</div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs hidden sm:block"></i>
+                        <div class="bg-amber-500/20 text-amber-400 p-2 rounded-lg flex-1 min-w-[70px]">ILMU</div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs hidden sm:block"></i>
+                        <div class="bg-brand-500 text-white p-2 rounded-lg flex-1 min-w-[70px]">PERUBAHAN</div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab5',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center font-bold text-sm">BAB 5</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Dua Jalur Perjuangan Perubahan</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Dalam mengubah tatanan, manusia memilih dua strategi jalur pergerakan. Keduanya memiliki kelebihan dan tantangannya masing-masing:
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <div class="glass-panel p-3.5 rounded-xl border-t-4 border-t-blue-500">
+                            <h4 class="font-bold text-xs text-blue-500 mb-1 flex items-center"><i class="fa-solid fa-building mr-1.5"></i> A. Dari Dalam Sistem</h4>
+                            <p class="text-[10px] text-slate-400 mb-2">Institusi, Pemerintahan, Korporasi</p>
+                            <div class="text-xs space-y-1">
+                                <p class="text-emerald-500">✔ Memiliki kewenangan & dampak cepat</p>
+                                <p class="text-rose-500">✖ Tekanan kompromi & risiko terbawa arus</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-3.5 rounded-xl border-t-4 border-t-amber-500">
+                            <h4 class="font-bold text-xs text-amber-500 mb-1 flex items-center"><i class="fa-solid fa-users mr-1.5"></i> B. Dari Luar Sistem</h4>
+                            <p class="text-[10px] text-slate-400 mb-2">Ulama, Intelektual, Kreator, Pemikir</p>
+                            <div class="text-xs space-y-1">
+                                <p class="text-emerald-500">✔ Bebas mengkritik & tawarkan paradigma</p>
+                                <p class="text-rose-500">✖ Butuh kesabaran panjang & rawan persekusi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-500/10 border border-brand-500/30 p-2.5 rounded-lg text-center text-xs font-semibold text-brand-600 dark:text-brand-400">
+                        Yang menentukan keberhasilan bukan posisi, melainkan keikhlasan, konsistensi, & risalah perjuangan.
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab6',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-500 flex items-center justify-center font-bold text-sm">BAB 6</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Risiko Pembaharu: Cahaya Terbakar</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Orang yang mengganggu kenyamanan status quo akan selalu menghadapi penolakan keras dari mereka yang menikmati kenyamanan tersebut. Sejarah mencatat pengorbanan para pembaharu:
+                    </p>
+
+                    <div class="space-y-2 mb-3">
+                        <div class="glass-card p-2.5 rounded-lg flex items-center space-x-3 border-l-2 border-l-rose-500">
+                            <div class="w-8 h-8 rounded bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold shrink-0 text-xs">SOC</div>
+                            <div class="text-xs">
+                                <strong class="block text-slate-800 dark:text-slate-100">Socrates</strong>
+                                <span class="text-slate-500 dark:text-slate-400 text-[11px]">Dihukum mati minum racun cemara karena mengajak pemuda Athena berpikir kritis.</span>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-2.5 rounded-lg flex items-center space-x-3 border-l-2 border-l-amber-500">
+                            <div class="w-8 h-8 rounded bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold shrink-0 text-xs">AHM</div>
+                            <div class="text-xs">
+                                <strong class="block text-slate-800 dark:text-slate-100">Imam Ahmad bin Hanbal</strong>
+                                <span class="text-slate-500 dark:text-slate-400 text-[11px]">Dipenjara & disiksa pada peristiwa Mihna demi mempertahankan aqidah Al-Qur'an.</span>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-2.5 rounded-lg flex items-center space-x-3 border-l-2 border-l-brand-500">
+                            <div class="w-8 h-8 rounded bg-brand-500/10 text-brand-500 flex items-center justify-center font-bold shrink-0 text-xs">NABI</div>
+                            <div class="text-xs">
+                                <strong class="block text-slate-800 dark:text-slate-100">Rasulullah ﷺ</strong>
+                                <span class="text-slate-500 dark:text-slate-400 text-[11px]">Dihina, diboikot 3 tahun di Syi'ib Abi Thalib, dilempari batu di Thaif, & diancam dibunuh.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-center italic text-slate-400">Islam mengajarkan keberanian harus disertai hikmah, bukan tindakan konyol mencari kehancuran.</p>
+                </div>`
+        },
+        {
+            id: 'bab7',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-500 flex items-center justify-center font-bold text-sm">BAB 7</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">3 Fondasi Trickster Islam</h2>
+                    </div>
+
+                    <!-- Quranic Verse -->
+                    <div class="glass-panel p-3 rounded-xl border-l-4 border-l-teal-500 bg-teal-500/5 mb-3 text-xs">
+                        <span class="font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wider block mb-1">QS. Ali Imran: 104</span>
+                        <p class="font-serif italic text-slate-700 dark:text-slate-200">"Dan hendaklah ada di antara kamu segolongan umat yang menyeru kepada kebajikan, menyuruh kepada yang ma'ruf dan mencegah dari yang munkar..."</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center mb-3">
+                        <div class="glass-panel p-3 rounded-xl">
+                            <div class="w-8 h-8 mx-auto bg-brand-500 text-white rounded-full flex items-center justify-center mb-1 text-xs"><i class="fa-solid fa-book"></i></div>
+                            <strong class="text-xs block text-brand-600 dark:text-brand-400">1. ILMU</strong>
+                            <span class="text-[10px] text-slate-400">Mencegah kritik menjadi opini kosong</span>
+                        </div>
+                        <div class="glass-panel p-3 rounded-xl">
+                            <div class="w-8 h-8 mx-auto bg-amber-500 text-white rounded-full flex items-center justify-center mb-1 text-xs"><i class="fa-solid fa-eye"></i></div>
+                            <strong class="text-xs block text-amber-500">2. VISI</strong>
+                            <span class="text-[10px] text-slate-400">Mencegah gerakan tanpa arah</span>
+                        </div>
+                        <div class="glass-panel p-3 rounded-xl">
+                            <div class="w-8 h-8 mx-auto bg-blue-500 text-white rounded-full flex items-center justify-center mb-1 text-xs"><i class="fa-solid fa-network-wired"></i></div>
+                            <strong class="text-xs block text-blue-500">3. JAMAAH</strong>
+                            <span class="text-[10px] text-slate-400">Menjaga perjuangan tak mudah dipadamkan</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 text-white p-2.5 rounded-lg text-center font-mono text-xs font-bold">
+                        ILMU + VISI + JARIKAN = PERUBAHAN BERKELANJUTAN
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab8',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-500 flex items-center justify-center font-bold text-sm">BAB 8</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Korelasi Dunia Bisnis & Perusahaan</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Konsep pembaharu sangat relevan dalam korporasi modern. Perusahaan besar sering bangkrut karena penyakit <strong>terlalu nyaman & takut berubah</strong>.
+                    </p>
+
+                    <div class="glass-panel p-4 rounded-xl border-l-4 border-l-purple-500 mb-3">
+                        <h4 class="font-bold text-xs text-purple-500 mb-1"><i class="fa-solid fa-lightbulb mr-1"></i> Inovator sebagai Trickster Bisnis</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Inovator sejati adalah orang yang berani mempertanyakan: <em>"Mengapa proses ini harus selalu begitu? Adakah cara lebih efektif?"</em>
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20 text-rose-500">
+                            <strong>Pengkritik Biasa:</strong>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hanya mengeluh tanpa solusi konkret.</p>
+                        </div>
+                        <div class="bg-brand-500/10 p-2.5 rounded-lg border border-brand-500/20 text-brand-500">
+                            <strong>Inovator Sejati:</strong>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Membawa solusi, sistem, & alternatif nyata.</p>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab9',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-500 flex items-center justify-center font-bold text-sm">BAB 9</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Bahaya Menjadi Trickster Palsu</h2>
+                    </div>
+
+                    <p class="text-xs sm:text-sm leading-relaxed mb-3 text-slate-600 dark:text-slate-300">
+                        Di era digital, kontroversi sangat mudah menghasilkan panggung popularitas. Namun kontroversi bukan tujuan!
+                    </p>
+
+                    <div class="glass-panel p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 mb-3">
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div class="border-r border-slate-300 dark:border-slate-700 pr-2">
+                                <span class="text-rose-500 font-bold block mb-1"><i class="fa-solid fa-eye"></i> Pencari Popularitas</span>
+                                <p class="italic text-slate-600 dark:text-slate-300">"Aku ingin semua orang melihatku dan kagum!"</p>
+                            </div>
+                            <div class="pl-2">
+                                <span class="text-brand-500 font-bold block mb-1"><i class="fa-solid fa-sun"></i> Pembawa Risalah</span>
+                                <p class="italic text-slate-600 dark:text-slate-300">"Aku ingin manusia melihat kebenaran wahyu!"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-center text-xs text-amber-700 dark:text-amber-300">
+                        <strong>Indikator Keberhasilan Pembaharu:</strong><br>
+                        Apakah setelah kita berbicara manusia menjadi lebih dekat pada kebenaran, atau sekadar membuat kegaduhan?
+                    </div>
+                </div>`
+        },
+        {
+            id: 'bab10',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center font-bold text-sm">BAB 10</span>
+                        <h2 class="text-lg sm:text-2xl font-bold">Generasi Pemikir Islam Kaffah</h2>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                        <div class="glass-card p-2.5 rounded-lg border-l-2 border-l-brand-500">
+                            <strong class="text-brand-500 block">1. Berani Berpikir</strong>
+                            <span class="text-[11px] text-slate-400">Tidak menelan informasi tanpa tabayyun & kajian.</span>
+                        </div>
+                        <div class="glass-card p-2.5 rounded-lg border-l-2 border-l-amber-500">
+                            <strong class="text-amber-500 block">2. Berani Bertanya</strong>
+                            <span class="text-[11px] text-slate-400">Mencari akar kebenaran masalah.</span>
+                        </div>
+                        <div class="glass-card p-2.5 rounded-lg border-l-2 border-l-blue-500">
+                            <strong class="text-blue-500 block">3. Berani Menyampaikan</strong>
+                            <span class="text-[11px] text-slate-400">Dengan lisan hikmah & santun.</span>
+                        </div>
+                        <div class="glass-card p-2.5 rounded-lg border-l-2 border-l-purple-500">
+                            <strong class="text-purple-500 block">4. Berani Membangun</strong>
+                            <span class="text-[11px] text-slate-400">Tidak cuma mengkritik, tapi menciptakan solusi.</span>
+                        </div>
+                    </div>
+
+                    <!-- Roadmap Model -->
+                    <div class="bg-slate-900 text-white p-3 rounded-xl text-center text-[10px] sm:text-xs">
+                        <span class="text-brand-400 font-bold block mb-1">ROADMAP MODEL GENERASI PEMBAHARU</span>
+                        <div class="flex justify-between items-center font-mono font-bold">
+                            <span>AQIDAH</span> <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                            <span>PEMIKIRAN</span> <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                            <span>KRITIK</span> <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                            <span class="text-gold-400">PERADABAN</span>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'penutup',
+            html: `
+                <div class="w-full max-w-3xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1 text-center">
+                    <div class="w-12 h-12 bg-brand-500/20 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    
+                    <h2 class="text-xl sm:text-2xl font-bold mb-2">Penutup: Seni Membuka Hati</h2>
+                    
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4 max-w-xl mx-auto">
+                        Seni "Trickster" dalam Islam bukanlah seni merusak, melainkan seni menyampaikan kebenaran dengan cara yang mampu membongkar kemunafikan dan membuka pintu pikiran manusia.
+                    </p>
+
+                    <div class="glass-panel p-3.5 rounded-xl border border-brand-500/30 text-left mb-3">
+                        <span class="text-xs font-bold text-brand-500 block mb-1">Ciri Pembaharu Sejati:</span>
+                        <p class="text-xs text-slate-600 dark:text-slate-300">
+                            Bukan orang yang paling keras suaranya, melainkan yang <strong>paling dalam ilmunya, paling kuat prinsipnya, paling luas wawasannya, dan paling bijak metodenya</strong>.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-5 gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                        <div class="bg-slate-200 dark:bg-slate-800 p-1.5 rounded">🧠 Berpikir</div>
+                        <div class="bg-slate-200 dark:bg-slate-800 p-1.5 rounded">📚 Berilmu</div>
+                        <div class="bg-slate-200 dark:bg-slate-800 p-1.5 rounded">🎯 Punya Visi</div>
+                        <div class="bg-slate-200 dark:bg-slate-800 p-1.5 rounded">🤝 Berjamaah</div>
+                        <div class="bg-brand-500 text-white p-1.5 rounded">☪️ Wahyu</div>
+                    </div>
+                </div>`
+        },
+        {
+            id: 'quiz-intro',
+            html: `
+                <div class="text-center flex flex-col justify-center items-center w-full max-w-xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2">
+                    <div class="w-20 h-20 bg-gradient-to-br from-brand-500 to-emerald-600 rounded-3xl flex items-center justify-center text-white mb-4 shadow-xl shadow-brand-500/30 btn-pulse">
+                        <i class="fa-solid fa-gamepad text-4xl"></i>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Evaluasi Pemahaman</h2>
+                    <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-6 max-w-md">
+                        Uji wawasan analitis Anda seputar materi "Seni "Trickster" Membongkar Kemunafikan". Terdapat 5 pertanyaan.
+                    </p>
+                    <button onclick="startQuiz()" class="px-8 py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition shadow-lg shadow-brand-500/30 w-full sm:w-auto">
+                        Mulai Kuis <i class="fa-solid fa-play ml-2"></i>
+                    </button>
+                </div>`
+        },
+        { id: 'quiz-1', type: 'quiz' },
+        { id: 'quiz-2', type: 'quiz' },
+        { id: 'quiz-3', type: 'quiz' },
+        { id: 'quiz-4', type: 'quiz' },
+        { id: 'quiz-5', type: 'quiz' },
+        { id: 'quiz-result', type: 'result' }
+    ];
+
+    const quizData = [
+        {
+            q: "Menurut modul, mengapa kebatilan atau kesalahan tradisi sering bertahan lama di tengah masyarakat?",
+            options: [
+                "Karena didukung oleh militer yang tidak terkalahkan.",
+                "Karena manusia cenderung berhenti berpikir dan menganggap kebiasaan sebagai kebenaran.",
+                "Karena orang-orang benar selalu tidak peduli.",
+                "Karena tradisi nenek moyang pasti selalu benar."
+            ],
+            correct: 1,
+            rationale: "Kebatilan bertahan bukan karena ia kuat, melainkan karena manusia cenderung mempertahankan status quo tanpa mau mengkritisinya (QS. Al-Baqarah: 170)."
+        },
+        {
+            q: "Apa perbedaan paling mendasar antara 'Pengganggu Tanpa Nilai' dan 'Pembongkar Kebatilan'?",
+            options: [
+                "Pengganggu mencari atensi/viral, sedangkan pembongkar kebatilan berlandaskan ilmu untuk perubahan nyata.",
+                "Pengganggu selalu gagal, sedangkan pembongkar kebatilan tidak pernah menghadapi ujian.",
+                "Pengganggu menggunakan kekerasan, sedangkan pembongkar hanya menggunakan media sosial.",
+                "Tidak ada perbedaan sama sekali."
+            ],
+            correct: 0,
+            rationale: "Pengganggu tanpa nilai hanya memicu kebisingan kosong, sementara pembongkar kebatilan dilandasi ilmu dan niat ikhlas untuk transformasi."
+        },
+        {
+            q: "Faktor utama apa yang menyebabkan oligarki Makkah menolak keras dakwah Rasulullah ﷺ?",
+            options: [
+                "Karena Rasulullah ﷺ tidak pandai berbicara.",
+                "Karena ajaran Islam mengancam monopoli ekonomi berhala dan kedudukan sosial-politik mereka.",
+                "Karena Makkah diserang oleh kerajaan asing.",
+                "Karena masyarakat Makkah tidak mengenal sosok Rasulullah ﷺ."
+            ],
+            correct: 1,
+            rationale: "Penolakan terjadi karena Islam menggugat sistem oligarki bisnis berhala, penindasan sosial, serta kasta keturunan bangsawan Quraysh."
+        },
+        {
+            q: "Manakah kelebihan dan tantangan dari pejuang perubahan yang memilih jalur 'Dari Luar Sistem'?",
+            options: [
+                "Kelebihan: Punya wewenang instan. Tantangan: Modal uang besar.",
+                "Kelebihan: Bebas menawarkan paradigma baru. Tantangan: Membutuhkan kesabaran panjang & rawan tekanan.",
+                "Kelebihan: Tidak ada risiko. Tantangan: Tidak bisa berbuat apa-apa.",
+                "Kelebihan: Mudah kompromi. Tantangan: Kehilangan prinsip."
+            ],
+            correct: 1,
+            rationale: "Jalur dari luar (pemikir/ulama) bebas menyampaikan kritik segar, namun dampaknya memerlukan proses dan waktu yang panjang."
+        },
+        {
+            q: "Sesuai QS. Ali Imran: 104, mengapa seorang pembaharu membutuhkan fondasi 'Jamaah / Jaringan'?",
+            options: [
+                "Agar perjuangan tidak mudah dipadamkan dan memiliki kekuatan kolektif.",
+                "Agar bisa mengumpulkan dana politik yang melimpah.",
+                "Agar namanya terkenal di seluruh dunia.",
+                "Agar bisa melakukan perlawanan fisik yang merusak."
+            ],
+            correct: 0,
+            rationale: "Perjuangan individual sangat rapuh. Jaringan/jamaah memastikan gerakan amar ma'ruf nahi munkar berkesinambungan dan memiliki perlindungan bersama."
+        }
+    ];
+
+    // --- STATE MANAGEMENT ---
+    let currentSlide = 0;
+    let quizScore = 0;
+    let quizState = Array(quizData.length).fill(-1);
+
+    const container = document.getElementById('slide-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercent = document.getElementById('progress-percent');
+    const slideCounter = document.getElementById('slide-counter');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function initSlides() {
+        let quizCounter = 0;
+        slidesData.forEach((slide, index) => {
+            const div = document.createElement('div');
+            div.className = `slide ${index === 0 ? 'active' : ''}`;
+            div.id = `slide-${index}`;
+            
+            if (slide.type === 'quiz') {
+                slide.qIndex = quizCounter;
+                div.innerHTML = generateQuizHTML(quizCounter);
+                quizCounter++;
+            } else if (slide.type === 'result') {
+                div.innerHTML = `<div id="result-container" class="w-full h-full flex items-center justify-center"></div>`;
+            } else {
+                div.innerHTML = slide.html;
+            }
+            container.appendChild(div);
+        });
+        updateUI();
+    }
+
+    function generateQuizHTML(qIndex) {
+        const q = quizData[qIndex];
+        let optionsHTML = q.options.map((opt, i) => `
+            <button id="opt-${qIndex}-${i}" onclick="answerQuiz(${qIndex}, ${i})" class="w-full text-left p-3.5 rounded-xl glass-panel hover:bg-brand-500/10 transition font-medium text-xs sm:text-sm border border-slate-200 dark:border-slate-800 flex items-start space-x-3">
+                <span class="w-5 h-5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-center leading-5 shrink-0 text-xs font-bold">${String.fromCharCode(65+i)}</span>
+                <span class="flex-1">${opt}</span>
+            </button>
+        `).join('');
+
+        return `
+            <div class="w-full max-w-2xl mx-auto max-h-[calc(100vh-160px)] overflow-y-auto custom-scroll px-2 py-1">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
+                    <span class="font-bold text-xs text-brand-500 uppercase tracking-wider">Pertanyaan ${qIndex + 1} dari ${quizData.length}</span>
+                    <i class="fa-solid fa-brain text-slate-400 text-sm"></i>
+                </div>
+                <h3 class="text-sm sm:text-base font-bold mb-4 leading-relaxed">${q.q}</h3>
+                <div class="space-y-2.5">${optionsHTML}</div>
+                <div id="feedback-${qIndex}" class="mt-4 p-3 rounded-xl hidden text-xs font-medium leading-relaxed"></div>
+            </div>`;
+    }
+
+    function updateUI() {
+        document.querySelectorAll('.slide').forEach((el, index) => {
+            el.className = 'slide';
+            if (index === currentSlide) {
+                el.classList.add('active');
+            } else if (index < currentSlide) {
+                el.classList.add('prev');
+            }
+        });
+
+        const progress = Math.round(((currentSlide + 1) / slidesData.length) * 100);
+        progressBar.style.width = `${progress}%`;
+        progressPercent.innerText = `${progress}%`;
+        slideCounter.innerText = `${currentSlide + 1} / ${slidesData.length}`;
+
+        prevBtn.disabled = currentSlide === 0;
+        
+        if (slidesData[currentSlide].type === 'quiz') {
+            const qIndex = slidesData[currentSlide].qIndex;
+            nextBtn.style.display = quizState[qIndex] !== -1 ? 'flex' : 'none';
+        } else if (slidesData[currentSlide].type === 'result') {
+            nextBtn.style.display = 'none';
+            renderResult();
+        } else {
+            nextBtn.style.display = 'flex';
+        }
+    }
+
+    function nextSlide() {
+        if (currentSlide < slidesData.length - 1) {
+            sounds.nav();
+            currentSlide++;
+            updateUI();
+        }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) {
+            sounds.nav();
+            currentSlide--;
+            updateUI();
+        }
+    }
+
+    function startQuiz() {
+        nextSlide();
+    }
+
+    function answerQuiz(qIndex, selectedIndex) {
+        if (quizState[qIndex] !== -1) return;
+
+        quizState[qIndex] = selectedIndex;
+        const q = quizData[qIndex];
+        const isCorrect = selectedIndex === q.correct;
+        
+        if (isCorrect) {
+            quizScore++;
+            sounds.correct();
+        } else {
+            sounds.wrong();
+        }
+
+        q.options.forEach((_, i) => {
+            const btn = document.getElementById(`opt-${qIndex}-${i}`);
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            if (i === q.correct) {
+                btn.classList.remove('opacity-50');
+                btn.classList.add('bg-brand-500/20', 'border-brand-500', 'text-brand-600', 'dark:text-brand-300');
+            } else if (i === selectedIndex && !isCorrect) {
+                btn.classList.remove('opacity-50');
+                btn.classList.add('bg-rose-500/20', 'border-rose-500', 'text-rose-600', 'dark:text-rose-300');
+            }
+        });
+
+        const fb = document.getElementById(`feedback-${qIndex}`);
+        fb.classList.remove('hidden');
+        if (isCorrect) {
+            fb.classList.add('bg-brand-500/10', 'text-brand-700', 'dark:text-brand-300', 'border', 'border-brand-500/30');
+            fb.innerHTML = `<strong>Tepat Sekali!</strong> ${q.rationale}`;
+        } else {
+            fb.classList.add('bg-rose-500/10', 'text-rose-700', 'dark:text-rose-300', 'border', 'border-rose-500/30');
+            fb.innerHTML = `<strong>Kurang Tepat.</strong> ${q.rationale}`;
+        }
+
+        nextBtn.style.display = 'flex';
+    }
+
+    function renderResult() {
+        const resContainer = document.getElementById('result-container');
+        const percentage = Math.round((quizScore / quizData.length) * 100);
+        let msg = "", icon = "", color = "";
+
+        if (percentage === 100) {
+            msg = "Sempurna! Anda sangat memahami prinsip Pembaharu Kaffah.";
+            icon = "fa-crown"; color = "text-gold-500";
+        } else if (percentage >= 60) {
+            msg = "Bagus! Anda memahami esensi dasar Trickster Islam.";
+            icon = "fa-star"; color = "text-brand-500";
+        } else {
+            msg = "Tetap semangat! Silakan ulangi untuk memperdalam materi.";
+            icon = "fa-book-open"; color = "text-blue-500";
+        }
+
+        resContainer.innerHTML = `
+            <div class="text-center glass-panel p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-sm w-full mx-4">
+                <i class="fa-solid ${icon} text-5xl ${color} mb-3"></i>
+                <h2 class="text-2xl font-extrabold mb-1">Skor: ${percentage}%</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">${quizScore} dari ${quizData.length} pertanyaan benar</p>
+                <p class="text-xs sm:text-sm font-medium mb-6 text-slate-700 dark:text-slate-200">${msg}</p>
+                <button onclick="location.reload()" class="w-full py-3 bg-brand-500 text-white font-bold rounded-xl hover:bg-brand-600 transition shadow-lg shadow-brand-500/30 text-xs sm:text-sm">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Pelajari Lagi
+                </button>
+            </div>
+        `;
+    }
+
+    window.onload = () => {
+        initSlides();
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight' && nextBtn.style.display !== 'none') nextSlide();
+            if(e.key === 'ArrowLeft' && !prevBtn.disabled) prevSlide();
+        });
+    };
+</script>
+</body>
+</html>
